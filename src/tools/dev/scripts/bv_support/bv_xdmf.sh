@@ -54,9 +54,15 @@ function bv_xdmf_host_profile
         echo \
             "VISIT_OPTION_DEFAULT(VISIT_XDMF_DIR \${VISITHOME}/Xdmf/$XDMF_VERSION/\${VISITARCH})" \
             >> $HOSTCONF
-        echo \
-            "VISIT_OPTION_DEFAULT(VISIT_XDMF_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP} VTK_LIBRARY_DIRS vtklibxml2-\${VTK_MAJOR_VERSION}.\${VTK_MINOR_VERSION} ${VISIT_VTK_LIBDEP} TYPE STRING)"\
-            >> $HOSTCONF
+        if [[ "$DO_VTK9" == "yes" ]] ; then
+            echo \
+                "VISIT_OPTION_DEFAULT(VISIT_XDMF_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP} \${VISIT_VTK_DIR}/lib64 vtklibxml2-\${VTK_MAJOR_VERSION}.\${VTK_MINOR_VERSION} ${VISIT_VTK_LIBDEP} TYPE STRING)"\
+                >> $HOSTCONF
+        else
+            echo \
+                "VISIT_OPTION_DEFAULT(VISIT_XDMF_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP} VTK_LIBRARY_DIRS vtklibxml2-\${VTK_MAJOR_VERSION}.\${VTK_MINOR_VERSION} ${VISIT_VTK_LIBDEP} TYPE STRING)"\
+                >> $HOSTCONF
+        fi
     fi
 }
 
@@ -290,29 +296,31 @@ function build_xdmf
         XDMF_SHARED_LIBS="ON"
         LIBEXT="${SO_EXT}"
     fi
+ 
+    xopts=""
+    xopts="${xopts} -DCMAKE_INSTALL_PREFIX:PATH=\"$VISITDIR/Xdmf/${XDMF_VERSION}/${VISITARCH}\""
+    xopts="${xopts} -DCMAKE_BUILD_TYPE:STRING=\"${VISIT_BUILD_MODE}\""
+    xopts="${xopts} -DCMAKE_BUILD_WITH_INSTALL_RPATH:BOOL=ON"
+    xopts="${xopts} -DBUILD_SHARED_LIBS:BOOL=${XDMF_SHARED_LIBS}"
+    xopts="${xopts} -DCMAKE_CXX_FLAGS:STRING=\"${CXXFLAGS} ${CXX_OPT_FLAGS}\""
+    xopts="${xopts} -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}"
+    xopts="${xopts} -DCMAKE_C_FLAGS:STRING=\"${CFLAGS} ${C_OPT_FLAGS}\""
+    xopts="${xopts} -DCMAKE_C_COMPILER:STRING=${C_COMPILER}"
+    xopts="${xopts} -DBUILD_TESTING:BOOL=OFF"
+    xopts="${xopts} -DXDMF_BUILD_MPI:BOOL=OFF"
+    xopts="${xopts} -DXDMF_BUILD_VTK:BOOL=OFF"
+    xopts="${xopts} -DXDMF_BUILD_UTILS:BOOL=OFF"
+    xopts="${xopts} -DXDMF_SYSTEM_HDF5:BOOL=ON"
+    xopts="${xopts} -DHDF5_INCLUDE_PATH:PATH=\"$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/include\""
+    xopts="${xopts} -DHDF5_LIBRARY:FILEPATH=\"$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/lib/libhdf5.${SO_EXT}\""
+    xopts="${xopts} -DXDMF_SYSTEM_ZLIB:BOOL=ON"
+    xopts="${xopts} -DZLIB_INCLUDE_DIR:PATH=${ZLIB_INCLUDE_DIR}"
+    xopts="${xopts} -DZLIB_LIBRARY:FILEPATH=${ZLIB_LIBRARY}"
+    xopts="${xopts} -DXDMF_SYSTEM_LIBXML2:BOOL=ON"
+    xopts="${xopts} -DLIBXML2_INCLUDE_PATH:PATH=\"$VISITDIR/${VTK_INSTALL_DIR}/$VTK_VERSION/$VISITARCH/include/vtk-${VTK_SHORT_VERSION}/vtklibxml2\""
+    xopts="${xopts} -DLIBXML2_LIBRARY:FILEPATH=\"$VISITDIR/${VTK_INSTALL_DIR}/$VTK_VERSION/$VISITARCH/lib/libvtklibxml2-${VTK_SHORT_VERSION}.${SO_EXT}\""
 
-    ${CMAKE_BIN} -DCMAKE_INSTALL_PREFIX:PATH="$VISITDIR/Xdmf/${XDMF_VERSION}/${VISITARCH}"\
-                 -DCMAKE_BUILD_TYPE:STRING="${VISIT_BUILD_MODE}" \
-                 -DCMAKE_BUILD_WITH_INSTALL_RPATH:BOOL=ON \
-                 -DBUILD_SHARED_LIBS:BOOL=${XDMF_SHARED_LIBS}\
-                 -DCMAKE_CXX_FLAGS:STRING="${CXXFLAGS} ${CXX_OPT_FLAGS}"\
-                 -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}\
-                 -DCMAKE_C_FLAGS:STRING="${CFLAGS} ${C_OPT_FLAGS}"\
-                 -DCMAKE_C_COMPILER:STRING=${C_COMPILER}\
-                 -DBUILD_TESTING:BOOL=OFF \
-                 -DXDMF_BUILD_MPI:BOOL=OFF \
-                 -DXDMF_BUILD_VTK:BOOL=OFF \
-                 -DXDMF_BUILD_UTILS:BOOL=OFF \
-                 -DXDMF_SYSTEM_HDF5:BOOL=ON \
-                 -DHDF5_INCLUDE_PATH:PATH="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/include" \
-                 -DHDF5_LIBRARY:FILEPATH="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/lib/libhdf5.${SO_EXT}" \
-                 -DXDMF_SYSTEM_ZLIB:BOOL=ON \
-                 -DZLIB_INCLUDE_DIR:PATH=${ZLIB_INCLUDE_DIR} \
-                 -DZLIB_LIBRARY:FILEPATH=${ZLIB_LIBRARY} \
-                 -DXDMF_SYSTEM_LIBXML2:BOOL=ON \
-                 -DLIBXML2_INCLUDE_PATH:PATH="$VISITDIR/${VTK_INSTALL_DIR}/$VTK_VERSION/$VISITARCH/include/vtk-${VTK_SHORT_VERSION}/vtklibxml2" \
-                 -DLIBXML2_LIBRARY:FILEPATH="$VISITDIR/${VTK_INSTALL_DIR}/$VTK_VERSION/$VISITARCH/lib/libvtklibxml2-${VTK_SHORT_VERSION}.${SO_EXT}" \
-                 .
+    ${CMAKE_BIN} ${xopts} . 
 
     if [[ $? != 0 ]] ; then
         warn "Xdmf configure failed.  Giving up"

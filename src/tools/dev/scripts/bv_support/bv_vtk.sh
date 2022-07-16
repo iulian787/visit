@@ -2163,7 +2163,7 @@ function build_vtk
     vopts="${vopts} -DCMAKE_EXE_LINKER_FLAGS:STRING=${lf}"
     vopts="${vopts} -DCMAKE_MODULE_LINKER_FLAGS:STRING=${lf}"
     vopts="${vopts} -DCMAKE_SHARED_LINKER_FLAGS:STRING=${lf}"
-    if [[ "$DO_VTK9" ==" yes" ]] ; then
+    if [[ "$DO_VTK9" == "yes" ]] ; then
         vopts="${vopts} -DVTK_BUILD_TESTING:BOOL=false"
         vopts="${vopts} -DVTK_BUILD_DOCUMENTATION:BOOL=false"
         # setting this to true causes errors when building debug versions of
@@ -2200,7 +2200,7 @@ function build_vtk
 
     # allow VisIt to override any of vtk's classes
     vopts="${vopts} -DVTK_ALL_NEW_OBJECT_FACTORY:BOOL=true"
-    if [[ $DO_VTK9 == "yes" ]] ; then
+    if [[ "$DO_VTK9" == "yes" ]] ; then
         # disable downloads (also disables testing)
         vopts="${vopts} -DVTK_FORBID_DOWNLOADS:BOOL=true"
 
