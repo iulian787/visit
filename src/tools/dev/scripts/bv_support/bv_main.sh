@@ -597,6 +597,7 @@ function initialize_build_visit()
     export DO_CONTEXT_CHECK="yes"
     export VISIT_INSTALL_NETWORK=""
     export DO_QT510="no"
+    export DO_VTK9="no"
     DOWNLOAD_ONLY="no"
 
 
