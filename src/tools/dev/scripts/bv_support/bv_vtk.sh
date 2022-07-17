@@ -2308,7 +2308,7 @@ function build_vtk
     fi
 
     # Use Mesa as GL?
-    if [[ "$DO_VTK9" ==" yes" ]] ; then
+    if [[ "$DO_VTK9" == "yes" ]] ; then
         if [[ "$DO_MESAGL" == "yes" ]] ; then
             vopts="${vopts} -DOPENGL_INCLUDE_DIR:PATH=${MESAGL_INCLUDE_DIR}"
             vopts="${vopts} -DOPENGL_gl_LIBRARY:STRING=${MESAGL_OPENGL_LIB}"
